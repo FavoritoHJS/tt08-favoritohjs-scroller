@@ -26,7 +26,6 @@ module tt_um_favoritohjs_scroller (
 	reg[2:0] count1;
 	reg[2:0] count1b;
 	reg[4:0] cutoff1;
-	reg[3:0] framecount;
 	wire     visible;
 
 	wire[3:0] l1 = lfsr1[3:0];
@@ -36,7 +35,6 @@ module tt_um_favoritohjs_scroller (
 	wire      vsync;
 	wire[9:0] hcount;
 	wire[9:0] vcount;
-	reg      carry;
 	assign uo_out[7] = hsync;
 	assign uo_out[3] = vsync;
 	assign {uo_out[0], uo_out[4]} = r;
@@ -107,7 +105,7 @@ module tt_um_favoritohjs_scroller (
 	end
 	always @(posedge clk) begin
 		if (visible) begin
-			if (l1 < cutoff1) begin
+			if ({0,l1} < cutoff1) begin
 				r <= 2'b11;
 				g <= 2'b10;
 				b <= 2'b00;
