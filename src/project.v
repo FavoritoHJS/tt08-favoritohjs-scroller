@@ -75,23 +75,23 @@ module tt_um_favoritohjs_scroller (
 			end
 			//This is executed once per scanline
 			if (hcount == 656) begin
-				if (vcount == 1)   cutoff1 = 0;
-				if (vcount == 128) cutoff1 = 1;
-				if (vcount == 144) cutoff1 = 2;
-				if (vcount == 160) cutoff1 = 3;
-				if (vcount == 176) cutoff1 = 4;
-				if (vcount == 192) cutoff1 = 5;
-				if (vcount == 208) cutoff1 = 6;
-				if (vcount == 224) cutoff1 = 7;
-				if (vcount == 240) cutoff1 = 8;
-				if (vcount == 256) cutoff1 = 9;
-				if (vcount == 272) cutoff1 = 10;
-				if (vcount == 288) cutoff1 = 11;
-				if (vcount == 304) cutoff1 = 12;
-				if (vcount == 320) cutoff1 = 13;
-				if (vcount == 336) cutoff1 = 14;
-				if (vcount == 352) cutoff1 = 15;
-				if (vcount == 368) cutoff1 = 16;
+				if (vcount == 1)   cutoff1 <= 0;
+				if (vcount == 128) cutoff1 <= 1;
+				if (vcount == 144) cutoff1 <= 2;
+				if (vcount == 160) cutoff1 <= 3;
+				if (vcount == 176) cutoff1 <= 4;
+				if (vcount == 192) cutoff1 <= 5;
+				if (vcount == 208) cutoff1 <= 6;
+				if (vcount == 224) cutoff1 <= 7;
+				if (vcount == 240) cutoff1 <= 8;
+				if (vcount == 256) cutoff1 <= 9;
+				if (vcount == 272) cutoff1 <= 10;
+				if (vcount == 288) cutoff1 <= 11;
+				if (vcount == 304) cutoff1 <= 12;
+				if (vcount == 320) cutoff1 <= 13;
+				if (vcount == 336) cutoff1 <= 14;
+				if (vcount == 352) cutoff1 <= 15;
+				if (vcount == 368) cutoff1 <= 16;
 				//and this once per frame
 				if (vcount == 481) begin
 					count1b <= count1b  + 1;
