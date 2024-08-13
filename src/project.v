@@ -105,7 +105,7 @@ module tt_um_favoritohjs_scroller (
 	end
 	always @(posedge clk) begin
 		if (visible) begin
-			if ({0,l1} < cutoff1) begin
+			if ({1'b0,l1} < cutoff1) begin
 				r <= 2'b11;
 				g <= 2'b10;
 				b <= 2'b00;
