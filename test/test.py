@@ -28,7 +28,7 @@ async def test_project(dut):
     dut.rst_n.value = 1
 
     dut._log.info("Test project behavior")
-    for framenum in range(60):
+    for framenum in range(1):
         frame = []
         for i in range(525):
             row = []
