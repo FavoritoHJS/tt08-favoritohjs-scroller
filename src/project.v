@@ -101,23 +101,24 @@ module tt_um_favoritohjs_scroller (
 				lfsr1 <= lfsr1b;
 				count1 <= count1b;
 			end
-		end
-	end
-	always @(posedge clk) begin
-		if (visible) begin
-			if ({1'b0,l1} < cutoff1) begin
-				r <= 2'b11;
-				g <= 2'b10;
-				b <= 2'b00;
+			//thanks @Ravenslofty and @a1k0n for alerting me of this block and
+			//how it needs to be inlined with the main block to prevent
+			//conflicting drivers
+			if (visible) begin
+				if (l1 < cutoff1) begin
+					r <= 2'b11;
+					g <= 2'b10;
+					b <= 2'b00;
+				end else begin
+					r <= 2'b01;
+					g <= 2'b10;
+					b <= 2'b11;
+				end
 			end else begin
-				r <= 2'b01;
-				g <= 2'b10;
-				b <= 2'b11;
+				r <= 2'b00;
+				g <= 2'b00;
+				b <= 2'b00;
 			end
-		end else begin
-			r <= 2'b00;
-			g <= 2'b00;
-			b <= 2'b00;
 		end
 	end
 	// List all unused inputs to prevent warnings
