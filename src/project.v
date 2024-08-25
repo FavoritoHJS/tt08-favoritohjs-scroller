@@ -65,6 +65,7 @@ module tt_um_favoritohjs_scroller (
 	);
 	color_ditherer color_ditherer(
 		.clk(clk),
+		.rst_n(rst_n)
 		.dither(dither),
 		.rin(rd),
 		.gin(gd),
@@ -182,6 +183,7 @@ endmodule
 
 module color_ditherer(
 	input wire clk,
+	input wire rst_n,
 	input wire dither,
 	input wire[2:0] rin,
 	input wire[2:0] gin,
@@ -190,19 +192,25 @@ module color_ditherer(
 	output wire[1:0] g,
 	output wire[1:0] b
 );
-	reg[1:0] rout = r;
-	reg[1:0] gout = g;
-	reg[1:0] bout = b;
+	reg[1:0] rout;
+	reg[1:0] gout;
+	reg[1:0] bout;
 	assign r = rout;
 	assign g = gout;
 	assign b = bout;
 	always @(posedge clk) begin
-		if (dither && rin[0]) rout <= rin[2:1] + 1;
-		else rout <= rin[2:1];
-		if (dither && gin[0]) gout <= gin[2:1] + 1;
-		else gout <= gin[2:1];
-		if (dither && bin[0]) bout <= bin[2:1] + 1;
-		else bout <= bin[2:1];
+		if (~rst_n) begin
+			rout = 0
+			gout = 0
+			bout = 0
+		end else begin
+			if (dither && rin[0]) rout <= rin[2:1] + 1;
+			else rout <= rin[2:1];
+			if (dither && gin[0]) gout <= gin[2:1] + 1;
+			else gout <= gin[2:1];
+			if (dither && bin[0]) bout <= bin[2:1] + 1;
+			else bout <= bin[2:1];
+		end
 	end
 endmodule
 
