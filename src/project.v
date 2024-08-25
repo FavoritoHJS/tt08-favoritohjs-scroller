@@ -200,9 +200,9 @@ module color_ditherer(
 	assign b = bout;
 	always @(posedge clk) begin
 		if (~rst_n) begin
-			rout = 0;
-			gout = 0;
-			bout = 0;
+			rout <= 0;
+			gout <= 0;
+			bout <= 0;
 		end else begin
 			if (dither && rin[0]) rout <= rin[2:1] + 1;
 			else rout <= rin[2:1];
@@ -211,7 +211,7 @@ module color_ditherer(
 			if (dither && bin[0]) bout <= bin[2:1] + 1;
 			else bout <= bin[2:1];
 		end
-	end
+	endails
 endmodule
 
 //https://github.com/algofoogle/tt05-vga-spi-rom/blob/main/src/vga_sync.v
