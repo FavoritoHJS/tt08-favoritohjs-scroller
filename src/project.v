@@ -65,7 +65,7 @@ module tt_um_favoritohjs_scroller (
 	);
 	color_ditherer color_ditherer(
 		.clk(clk),
-		.rst_n(rst_n)
+		.rst_n(rst_n),
 		.dither(dither),
 		.rin(rd),
 		.gin(gd),
@@ -200,9 +200,9 @@ module color_ditherer(
 	assign b = bout;
 	always @(posedge clk) begin
 		if (~rst_n) begin
-			rout = 0
-			gout = 0
-			bout = 0
+			rout = 0;
+			gout = 0;
+			bout = 0;
 		end else begin
 			if (dither && rin[0]) rout <= rin[2:1] + 1;
 			else rout <= rin[2:1];
