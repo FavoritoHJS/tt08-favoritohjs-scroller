@@ -97,14 +97,14 @@ module tt_um_favoritohjs_scroller (
 			cutoff1 <= 5'd0;
 			lfsr2 <= 9'h1ff;
 			lfsr2b <= 9'h1ff;
-			count2 <= 3'd7;
-			count2b <= 3'd7;
+			count2 <= 2'd3;
+			count2b <= 2'd3;
 			cutoff2 <= 5'd0;
 			dither <= 1'b0;
 			rd <= 3'b000;
 			gd <= 3'b000;
 			bd <= 3'b000;
-			vborder1 = 1'b0;
+			vborder1 <= 1'b0;
 		end else begin
 			// TODO: Read multiple bits out at the same time.
 			// https://zipcpu.com/dsp/2017/11/13/lfsr-multi.html
@@ -198,11 +198,11 @@ module color_ditherer(
 	assign b = bout;
 	always @(posedge clk) begin
 		if (dither && rin[0]) rout <= rin[2:1] + 1;
-		else rout = rin[2:1];
+		else rout <= rin[2:1];
 		if (dither && gin[0]) gout <= gin[2:1] + 1;
-		else gout = gin[2:1];
+		else gout <= gin[2:1];
 		if (dither && bin[0]) bout <= bin[2:1] + 1;
-		else bout = bin[2:1];
+		else bout <= bin[2:1];
 	end
 endmodule
 
