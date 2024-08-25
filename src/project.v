@@ -211,7 +211,7 @@ module color_ditherer(
 			if (dither && bin[0]) bout <= bin[2:1] + 1;
 			else bout <= bin[2:1];
 		end
-	endails
+	end
 endmodule
 
 //https://github.com/algofoogle/tt05-vga-spi-rom/blob/main/src/vga_sync.v
