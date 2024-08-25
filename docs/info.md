@@ -13,8 +13,8 @@ Explain how your project works
 
 ## How to test
 
-Explain how to use your project
+Set Clock to 25.18MHz, and use a Tiny VGA carrier board for video.
 
 ## External hardware
 
-List external hardware used in your project (e.g. PMOD, LED display, etc), if any
+This project requires a Tiny VGA carrier board to display video.

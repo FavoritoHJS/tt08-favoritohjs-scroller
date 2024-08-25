@@ -26,11 +26,23 @@ module tt_um_favoritohjs_scroller (
 	reg[2:0] count1;
 	reg[2:0] count1b;
 	reg[4:0] cutoff1;
+	reg      vborder1;
+	wire     hborder1 = (count1 == 0) || (count1 == 1);
+	wire     border1 = vborder1 || hborder1;
+	reg[8:0] lfsr2;
+	reg[8:0] lfsr2b;
+	reg[1:0] count2;
+	reg[1:0] count2b;
+	reg      count2low;
+	reg[4:0] cutoff2;
+	reg      dither;
 	wire     visible;
 
 	wire[3:0] l1 = lfsr1[3:0];
+	wire[3:0] l2 = lfsr2[3:0];
 	//https://github.com/algofoogle/tt05-vga-spi-rom/blob/main/src/test/tb.v
-	reg[1:0]  r, g, b;
+	reg[2:0]  rd,gd,bd;
+	wire[1:0]  r, g, b;
 	wire      hsync;
 	wire      vsync;
 	wire[9:0] hcount;
@@ -51,6 +63,31 @@ module tt_um_favoritohjs_scroller (
 		.clk(clk),
 		.rst_n(rst_n)
 	);
+	color_ditherer color_ditherer(
+		.clk(clk),
+		.dither(dither),
+		.rin(rd),
+		.gin(gd),
+		.bin(bd),
+		.r(r),
+		.g(g),
+		.b(b)
+	);
+	//https://stackoverflow.com/questions/12504837/verilog-generate-genvar-in-an-always-block
+	genvar i;
+	generate
+		for (i=0; i<=16; i=i+1) begin
+			always @(posedge clk) begin
+				if (rst_n) begin
+					if (vcount == 112 + (i*16)) cutoff1 <= i;
+					if (vcount == 112 + (i*16)) vborder1 <= 1;
+					if (vcount == 112 + (i*16) + 1) vborder1 <= 0;
+					if (vcount == 112 + (i*16) + 15) vborder1 <= 1;
+					if (vcount == 176 + (i*8)) cutoff2 <= i;
+				end
+			end
+		end
+	endgenerate
 	always @(posedge clk) begin
 		if (~rst_n) begin
 			lfsr1 <= 9'h1ff;
@@ -58,72 +95,115 @@ module tt_um_favoritohjs_scroller (
 			count1 <= 3'd7;
 			count1b <= 3'd7;
 			cutoff1 <= 5'd0;
-			r <= 2'b00;
-			g <= 2'b00;
-			b <= 2'b00;
+			lfsr2 <= 9'h1ff;
+			lfsr2b <= 9'h1ff;
+			count2 <= 3'd7;
+			count2b <= 3'd7;
+			cutoff2 <= 5'd0;
+			dither <= 1'b0;
+			rd <= 3'b000;
+			gd <= 3'b000;
+			bd <= 3'b000;
+			vborder1 = 1'b0;
 		end else begin
 			// TODO: Read multiple bits out at the same time.
 			// https://zipcpu.com/dsp/2017/11/13/lfsr-multi.html
 			if (visible) begin
+				dither <= ~dither;
 				count1 <= count1 + 1;
 				if (count1 == 0) begin
 					lfsr1[0] <= lfsr1[8] ^ lfsr1[4];
 					lfsr1[8:1] <= lfsr1[7:0];
 				end
+				count2 <= count2 + 1;
+				if (count2 == 0) begin
+					lfsr2[0] <= lfsr2[8] ^ lfsr2[4];
+					lfsr2[8:1] <= lfsr2[7:0];
+				end
 			end
 			//This is executed once per scanline
 			if (hcount == 656) begin
+				dither <= ~dither;
 				if (vcount == 1)   cutoff1 <= 0;
-				if (vcount == 128) cutoff1 <= 1;
-				if (vcount == 144) cutoff1 <= 2;
-				if (vcount == 160) cutoff1 <= 3;
-				if (vcount == 176) cutoff1 <= 4;
-				if (vcount == 192) cutoff1 <= 5;
-				if (vcount == 208) cutoff1 <= 6;
-				if (vcount == 224) cutoff1 <= 7;
-				if (vcount == 240) cutoff1 <= 8;
-				if (vcount == 256) cutoff1 <= 9;
-				if (vcount == 272) cutoff1 <= 10;
-				if (vcount == 288) cutoff1 <= 11;
-				if (vcount == 304) cutoff1 <= 12;
-				if (vcount == 320) cutoff1 <= 13;
-				if (vcount == 336) cutoff1 <= 14;
-				if (vcount == 352) cutoff1 <= 15;
-				if (vcount == 368) cutoff1 <= 16;
+				if (vcount == 1)   cutoff2 <= 0;
+
 				//and this once per frame
-				if (vcount == 481) begin
+				if (vcount == 482) begin
 					count1b <= count1b  + 1;
 					if (count1b == 0) begin
 						lfsr1b[0] <= lfsr1b[8] ^ lfsr1b[4];
 						lfsr1b[8:1] <= lfsr1b[7:0];
 					end
+					{count2b, count2low}<= {count2b, count2low} + 1;
+					if (count2b == 0 & count2low == 0) begin
+						lfsr2b[0] <= lfsr2b[8] ^ lfsr2b[4];
+						lfsr2b[8:1] <= lfsr2b[7:0];
+					end
 				end
 				lfsr1 <= lfsr1b;
+				lfsr2 <= lfsr2b;
 				count1 <= count1b;
+				count2 <= count2b;
 			end
 			//thanks @Ravenslofty and @a1k0n for alerting me of this block and
 			//how it needs to be inlined with the main block to prevent
 			//conflicting drivers
 			if (visible) begin
 				if (l1 < cutoff1) begin
-					r <= 2'b11;
-					g <= 2'b10;
-					b <= 2'b00;
+					if (border1) begin
+						rd <= 3'b011;
+						gd <= 3'b011;
+						bd <= 3'b110;
+					end else begin
+						rd <= 3'b110;
+						gd <= 3'b110;
+						bd <= 3'b101;
+					end
+				end else if (l2 < cutoff2) begin
+					rd <= 3'b010;
+					gd <= 3'b010;
+					bd <= 3'b100;
 				end else begin
-					r <= 2'b01;
-					g <= 2'b10;
-					b <= 2'b11;
+					rd <= 3'b010;
+					gd <= 3'b010;
+					bd <= 3'b011;
 				end
 			end else begin
-				r <= 2'b00;
-				g <= 2'b00;
-				b <= 2'b00;
+				rd <= 3'b000;
+				gd <= 3'b000;
+				bd <= 3'b000;
 			end
 		end
 	end
 	// List all unused inputs to prevent warnings
 	wire _unused = &{ena, 1'b0};
 
+endmodule
+
+module color_ditherer(
+	input wire clk,
+	input wire dither,
+	input wire[2:0] rin,
+	input wire[2:0] gin,
+	input wire[2:0] bin,
+	output wire[1:0] r,
+	output wire[1:0] g,
+	output wire[1:0] b
+);
+	reg[1:0] rout = r;
+	reg[1:0] gout = g;
+	reg[1:0] bout = b;
+	assign r = rout;
+	assign g = gout;
+	assign b = bout;
+	always @(posedge clk) begin
+		if (dither && rin[0]) rout <= rin[2:1] + 1;
+		else rout = rin[2:1];
+		if (dither && gin[0]) gout <= gin[2:1] + 1;
+		else gout = gin[2:1];
+		if (dither && bin[0]) bout <= bin[2:1] + 1;
+		else bout = bin[2:1];
+	end
 endmodule
 
 //https://github.com/algofoogle/tt05-vga-spi-rom/blob/main/src/vga_sync.v
@@ -161,15 +241,21 @@ module vga_sync(
 
 	end
 
-	wire xvisible, yvisible;
-	assign xvisible = (vga_xpos < 10'd640);
-	assign yvisible = (vga_ypos < 10'd480);
+	reg xvisible, yvisible;
+	//assign xvisible = (vga_xpos < 10'd641);
+	//assign yvisible = (vga_ypos < 10'd481);
 	assign visible = xvisible && yvisible;
 	always @(posedge clk) begin
 		if (~rst_n) begin
+			xvisible <= 1'b0;
+			yvisible <= 1'b0;
 			vga_hsync <= 1'b1;
 			vga_vsync <= 1'b1;
 		end else begin
+			if      (vga_xpos == 10'd1)   xvisible <= 1'b1;
+			else if (vga_xpos == 10'd641) xvisible <= 1'b0;
+			if      (vga_ypos == 10'd1)   yvisible <= 1'b1;
+			else if (vga_ypos == 10'd481) yvisible <= 1'b0;
 			if      (vga_xpos == 10'd656) vga_hsync <= 1'b0;
 			else if (vga_xpos == 10'd752) vga_hsync <= 1'b1;
 			if      (vga_ypos == 10'd490) vga_vsync <= 1'b0;
