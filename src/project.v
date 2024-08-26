@@ -78,25 +78,24 @@ module tt_um_favoritohjs_scroller (
 		.g(g),
 		.b(b)
 	);
-	vertical_scheudler #(
-		.START_HEIGHT(116),
-		.LOOP_LENGTH(16))
-	vscheudler1 (
+	/*Module parameters are broken, so i have to do this and hope it gets optimized away.*/
+	vertical_scheudler vscheudler1 (
 		.hsync(hsync),
 		.rst_n(rst_n),
 		.vsync(vsync),
 		.scanline(vcount),
+		.START_HEIGHT(116),
+		.LOOP_LENGTH(16),
 		.val(cutoff1),
 		.border(vborder1));
 
-	vertical_scheudler #(
-		.START_HEIGHT(184),
-		.LOOP_LENGTH(8))
-	vscheudler2 (
+	vertical_scheudler vscheudler2 (
 		.hsync(hsync),
 		.rst_n(rst_n),
 		.vsync(vsync),
 		.scanline(vcount),
+		.START_HEIGHT(184),
+		.LOOP_LENGTH(8),
 		.val(cutoff2),
 		.border(vborder2));
 
@@ -213,14 +212,14 @@ module tt_um_favoritohjs_scroller (
 
 endmodule
 
-module vertical_scheudler
-#(	parameter START_HEIGHT,
-	parameter LOOP_LENGTH
-)(
+/*Module parameters are broken, so i have to do this and hope it gets optimized away.*/
+module vertical_scheudler(
 	input wire hsync,
 	input wire rst_n,
 	input wire vsync,
 	input wire [9:0] scanline,
+	input wire [4:0] LOOP_LENGTH,
+	input wire [9.0] START_HEIGHT,
 	output wire [4:0] val,
 	output wire border
 );
@@ -249,9 +248,9 @@ module vertical_scheudler
 				end else begin
 					blockline <= blockline - 1;
 				end
-				if (blockline == LOOP_LENGTH - 1) borderreg = 0;
-				if (blockline == 1) borderreg = 1;
-				if (blockline == 0) borderreg = 1;
+				if (blockline == LOOP_LENGTH - 1) borderreg <= 0;
+				if (blockline == 1) borderreg <= 1;
+				if (blockline == 0) borderreg <= 1;
 			end
 		end
 	end
