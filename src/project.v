@@ -219,7 +219,7 @@ module vertical_scheudler(
 	input wire vsync,
 	input wire [9:0] scanline,
 	input wire [4:0] LOOP_LENGTH,
-	input wire [9.0] START_HEIGHT,
+	input wire [9:0] START_HEIGHT,
 	output wire [4:0] val,
 	output wire border
 );
