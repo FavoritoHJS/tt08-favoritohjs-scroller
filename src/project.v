@@ -37,10 +37,10 @@ module tt_um_favoritohjs_scroller (
 	reg      dither;
 	wire     visible;
 
-	reg[4:0] cutoff1;
-	reg      vborder1;
-	reg[4:0] cutoff2;
-	reg      vborder2;
+	wire[4:0] cutoff1;
+	wire      vborder1;
+	wire[4:0] cutoff2;
+	wire      vborder2;
 
 	wire[3:0] l1 = lfsr1[3:0];
 	wire[3:0] l2 = lfsr2[3:0];
