@@ -25,8 +25,6 @@ module tt_um_favoritohjs_scroller (
 	reg[8:0] lfsr1b;
 	reg[2:0] count1;
 	reg[2:0] count1b;
-	reg[4:0] cutoff1;
-	reg      vborder1;
 	wire     hborder1 = (count1 == 0) || (count1 == 1);
 	wire     border1 = vborder1 || hborder1;
 	reg[8:0] lfsr2;
@@ -34,9 +32,15 @@ module tt_um_favoritohjs_scroller (
 	reg[1:0] count2;
 	reg[1:0] count2b;
 	reg      count2low;
-	reg[4:0] cutoff2;
+	wire     hborder2 = (count2 == 0) || (count2 == 1);
+	wire     border2 = vborder2 || hborder2;
 	reg      dither;
 	wire     visible;
+
+	reg[4:0] cutoff1;
+	reg      vborder1;
+	reg[4:0] cutoff2;
+	reg      vborder2;
 
 	wire[3:0] l1 = lfsr1[3:0];
 	wire[3:0] l2 = lfsr2[3:0];
@@ -74,7 +78,30 @@ module tt_um_favoritohjs_scroller (
 		.g(g),
 		.b(b)
 	);
+	vertical_scheudler #(
+		.START_HEIGHT(116),
+		.LOOP_LENGTH(16))
+	vscheudler1 (
+		.hsync(hsync),
+		.rst_n(rst_n),
+		.vsync(vsync),
+		.scanline(vcount),
+		.val(cutoff1),
+		.border(vborder1));
+
+	vertical_scheudler #(
+		.START_HEIGHT(184),
+		.LOOP_LENGTH(8))
+	vscheudler2 (
+		.hsync(hsync),
+		.rst_n(rst_n),
+		.vsync(vsync),
+		.scanline(vcount),
+		.val(cutoff2),
+		.border(vborder2));
+
 	//https://stackoverflow.com/questions/12504837/verilog-generate-genvar-in-an-always-block
+	/*
 	genvar i;
 	generate
 		for (i=0; i<=16; i=i+1) begin
@@ -89,23 +116,22 @@ module tt_um_favoritohjs_scroller (
 			end
 		end
 	endgenerate
+	*/
 	always @(posedge clk) begin
 		if (~rst_n) begin
 			lfsr1 <= 9'h1ff;
 			lfsr1b <= 9'h1ff;
 			count1 <= 3'd7;
 			count1b <= 3'd7;
-			cutoff1 <= 5'd0;
 			lfsr2 <= 9'h1ff;
 			lfsr2b <= 9'h1ff;
 			count2 <= 2'd3;
 			count2b <= 2'd3;
-			cutoff2 <= 5'd0;
+			//cutoff2 <= 5'd0;
 			dither <= 1'b0;
 			rd <= 3'b000;
 			gd <= 3'b000;
 			bd <= 3'b000;
-			vborder1 <= 1'b0;
 		end else begin
 			// TODO: Read multiple bits out at the same time.
 			// https://zipcpu.com/dsp/2017/11/13/lfsr-multi.html
@@ -125,8 +151,8 @@ module tt_um_favoritohjs_scroller (
 			//This is executed once per scanline
 			if (hcount == 656) begin
 				dither <= ~dither;
-				if (vcount == 1)   cutoff1 <= 0;
-				if (vcount == 1)   cutoff2 <= 0;
+				//if (vcount == 1)   cutoff1 <= 0;
+				//if (vcount == 1)   cutoff2 <= 0;
 
 				//and this once per frame
 				if (vcount == 482) begin
@@ -161,9 +187,15 @@ module tt_um_favoritohjs_scroller (
 						bd <= 3'b101;
 					end
 				end else if (l2 < cutoff2) begin
-					rd <= 3'b010;
-					gd <= 3'b010;
-					bd <= 3'b100;
+					if (border2) begin
+						rd <= 3'b010;
+						gd <= 3'b010;
+						bd <= 3'b100;
+					end else begin
+						rd <= 3'b100;
+						gd <= 3'b100;
+						bd <= 3'b101;
+					end
 				end else begin
 					rd <= 3'b010;
 					gd <= 3'b010;
@@ -179,6 +211,50 @@ module tt_um_favoritohjs_scroller (
 	// List all unused inputs to prevent warnings
 	wire _unused = &{ena, 1'b0};
 
+endmodule
+
+module vertical_scheudler
+#(	parameter START_HEIGHT,
+	parameter LOOP_LENGTH
+)(
+	input wire hsync,
+	input wire rst_n,
+	input wire vsync,
+	input wire [9:0] scanline,
+	output wire [4:0] val,
+	output wire border
+);
+	reg started;
+	reg [3:0] blockline;
+	reg [4:0] blockval;
+	reg borderreg;
+	assign val = blockval;
+	assign border = borderreg;
+	always @(posedge hsync) begin
+		if (~rst_n || ~vsync) begin
+			started <= 1'b0;
+			blockline <= (LOOP_LENGTH - 1);
+			blockval <= 5'b0;
+			borderreg <= 1'b0;
+		end else begin
+			if (scanline == START_HEIGHT) begin
+				started <= 1;
+			end
+			if (started) begin
+				if (blockline == 0) begin
+					blockline <= (LOOP_LENGTH - 1);
+					if (blockval != 16) begin
+						blockval <= blockval + 1;
+					end
+				end else begin
+					blockline <= blockline - 1;
+				end
+				if (blockline == LOOP_LENGTH - 1) borderreg = 0;
+				if (blockline == 1) borderreg = 1;
+				if (blockline == 0) borderreg = 1;
+			end
+		end
+	end
 endmodule
 
 module color_ditherer(
