@@ -24,7 +24,7 @@ async def test_project(dut):
     dut.ui_in.value = 0
     dut.uio_in.value = 0
     dut.rst_n.value = 0
-    await ClockCycles(dut.clk, 100)
+    await ClockCycles(dut.clk, 10)
     dut.rst_n.value = 1
 
     dut._log.info("Test project behavior")
@@ -34,7 +34,11 @@ async def test_project(dut):
             row = []
             for j in range(800):
                 await ClockCycles(dut.clk, 1)
-                data = int(dut.uo_out)
+                try:
+                    data = int(dut.uo_out)
+                except Exception:
+                    dut._log.info(dut.uo_out.value)
+                    raise
                 row.append(data)
             frame.append(row)
         if use_pillow:

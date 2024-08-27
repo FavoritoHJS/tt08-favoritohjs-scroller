@@ -84,8 +84,8 @@ module tt_um_favoritohjs_scroller (
 		.rst_n(rst_n),
 		.vsync(vsync),
 		.scanline(vcount),
-		.START_HEIGHT(116),
-		.LOOP_LENGTH(16),
+		.START_HEIGHT(10'd116),
+		.LOOP_LENGTH(5'd16),
 		.val(cutoff1),
 		.border(vborder1));
 
@@ -94,8 +94,8 @@ module tt_um_favoritohjs_scroller (
 		.rst_n(rst_n),
 		.vsync(vsync),
 		.scanline(vcount),
-		.START_HEIGHT(184),
-		.LOOP_LENGTH(8),
+		.START_HEIGHT(10'd184),
+		.LOOP_LENGTH(5'd8),
 		.val(cutoff2),
 		.border(vborder2));
 
@@ -175,7 +175,7 @@ module tt_um_favoritohjs_scroller (
 			//how it needs to be inlined with the main block to prevent
 			//conflicting drivers
 			if (visible) begin
-				if (l1 < cutoff1) begin
+				if ({1'b0, l1} < cutoff1) begin
 					if (border1) begin
 						rd <= 3'b011;
 						gd <= 3'b011;
@@ -185,7 +185,7 @@ module tt_um_favoritohjs_scroller (
 						gd <= 3'b110;
 						bd <= 3'b101;
 					end
-				end else if (l2 < cutoff2) begin
+				end else if ({1'b0, l2} < cutoff2) begin
 					if (border2) begin
 						rd <= 3'b010;
 						gd <= 3'b010;
@@ -224,7 +224,7 @@ module vertical_scheudler(
 	output wire border
 );
 	reg started;
-	reg [3:0] blockline;
+	reg [4:0] blockline;
 	reg [4:0] blockval;
 	reg borderreg;
 	assign val = blockval;
@@ -237,7 +237,7 @@ module vertical_scheudler(
 			borderreg <= 1'b0;
 		end else begin
 			if (scanline == START_HEIGHT) begin
-				started <= 1;
+				started <= 1'b1;
 			end
 			if (started) begin
 				if (blockline == 0) begin
