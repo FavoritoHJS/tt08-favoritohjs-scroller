@@ -9,7 +9,7 @@ You can also include images in this folder and reference them in the markdown. E
 
 ## How it works
 
-Using plenty of counters, I'm able to to create a simple scrolling landscape
+The terrain is based on an LFSR, using the deterministic randomness of one to generate each layer of the city.
 
 ## How to test
 

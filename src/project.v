@@ -21,14 +21,14 @@ module tt_um_favoritohjs_scroller (
 	// assign uo_out  = ui_in + uio_in;  // Example: ou_out is the sum of ui_in and uio_in
 	assign uio_out = 0;
 	assign uio_oe  = 0;
-	reg[8:0] lfsr1;
-	reg[8:0] lfsr1b;
+	reg[9:0] lfsr1;
+	reg[9:0] lfsr1b;
 	reg[2:0] count1;
 	reg[2:0] count1b;
 	wire     hborder1 = (count1 == 0) || (count1 == 1);
 	wire     border1 = vborder1 || hborder1;
-	reg[8:0] lfsr2;
-	reg[8:0] lfsr2b;
+	reg[9:0] lfsr2;
+	reg[9:0] lfsr2b;
 	reg[1:0] count2;
 	reg[1:0] count2b;
 	reg      count2low;
@@ -122,12 +122,12 @@ module tt_um_favoritohjs_scroller (
 	*/
 	always @(posedge clk) begin
 		if (~rst_n) begin
-			lfsr1 <= 9'h1ff;
-			lfsr1b <= 9'h1ff;
+			lfsr1 <= 10'h3ff;
+			lfsr1b <= 10'h3ff;
 			count1 <= 3'd7;
 			count1b <= 3'd7;
-			lfsr2 <= 9'h1ff;
-			lfsr2b <= 9'h1ff;
+			lfsr2 <= 10'h10f;
+			lfsr2b <= 10'h3ff;
 			count2 <= 2'd3;
 			count2b <= 2'd3;
 			//cutoff2 <= 5'd0;
@@ -142,13 +142,19 @@ module tt_um_favoritohjs_scroller (
 				dither <= ~dither;
 				count1 <= count1 + 1;
 				if (count1 == 0) begin
-					lfsr1[0] <= lfsr1[8] ^ lfsr1[4];
-					lfsr1[8:1] <= lfsr1[7:0];
+					lfsr1[0] <= lfsr1[9] ^ lfsr1[6];
+					lfsr1[1] <= lfsr1[8] ^ lfsr1[5];
+					lfsr1[2] <= lfsr1[7] ^ lfsr1[4];
+					lfsr1[3] <= lfsr1[6] ^ lfsr1[3];
+					lfsr1[9:4] <= lfsr1[5:0];
 				end
 				count2 <= count2 + 1;
 				if (count2 == 0) begin
-					lfsr2[0] <= lfsr2[8] ^ lfsr2[4];
-					lfsr2[8:1] <= lfsr2[7:0];
+					lfsr2[0] <= lfsr2[9] ^ lfsr2[6];
+					lfsr2[1] <= lfsr2[8] ^ lfsr2[5];
+					lfsr2[2] <= lfsr2[7] ^ lfsr2[4];
+					lfsr2[3] <= lfsr2[6] ^ lfsr2[3];
+					lfsr2[9:4] <= lfsr2[5:0];
 				end
 			end
 			//This is executed once per scanline
