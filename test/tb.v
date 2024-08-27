@@ -23,7 +23,8 @@ module tb ();
   wire [7:0] uio_out;
   wire [7:0] uio_oe;
   //https://www.chipverify.com/verilog/verilog-testbench-simulation
-  always #1 clk = ~clk;
+  //Clock is driven from the testbench.
+  //always #1 clk = ~clk;
 
   // Replace tt_um_example with your module name:
   tt_um_favoritohjs_scroller user_project (
