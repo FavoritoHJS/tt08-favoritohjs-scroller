@@ -80,20 +80,24 @@ module tt_um_favoritohjs_scroller (
 	);
 	/*Module parameters are broken, so i have to do this and hope it gets optimized away.*/
 	vertical_scheudler vscheudler1 (
-		.hsync(hsync),
+		.clk(clk),
 		.rst_n(rst_n),
+		.hsync(hsync),
 		.vsync(vsync),
-		.scanline(vcount),
+		.xpos(hcount),
+		.ypos(vcount),
 		.START_HEIGHT(10'd116),
 		.LOOP_LENGTH(5'd16),
 		.val(cutoff1),
 		.border(vborder1));
 
 	vertical_scheudler vscheudler2 (
-		.hsync(hsync),
+		.clk(clk),
 		.rst_n(rst_n),
+		.hsync(hsync),
 		.vsync(vsync),
-		.scanline(vcount),
+		.xpos(hcount),
+		.ypos(vcount),
 		.START_HEIGHT(10'd184),
 		.LOOP_LENGTH(5'd8),
 		.val(cutoff2),
@@ -214,10 +218,12 @@ endmodule
 
 /*Module parameters are broken, so i have to do this and hope it gets optimized away.*/
 module vertical_scheudler(
-	input wire hsync,
+	input wire clk,
 	input wire rst_n,
+	input wire hsync,
 	input wire vsync,
-	input wire [9:0] scanline,
+	input wire [9:0] xpos,
+	input wire [9:0] ypos,
 	input wire [4:0] LOOP_LENGTH,
 	input wire [9:0] START_HEIGHT,
 	output wire [4:0] val,
@@ -229,28 +235,30 @@ module vertical_scheudler(
 	reg borderreg;
 	assign val = blockval;
 	assign border = borderreg;
-	always @(posedge hsync) begin
+	always @(posedge clk) begin
 		if (~rst_n || ~vsync) begin
 			started <= 1'b0;
 			blockline <= (LOOP_LENGTH - 1);
 			blockval <= 5'b0;
 			borderreg <= 1'b0;
 		end else begin
-			if (scanline == START_HEIGHT) begin
+			if (ypos == START_HEIGHT) begin
 				started <= 1'b1;
 			end
 			if (started) begin
-				if (blockline == 0) begin
-					blockline <= (LOOP_LENGTH - 1);
-					if (blockval != 16) begin
-						blockval <= blockval + 1;
+				if (xpos == 10'd656) begin
+					if (blockline == 0) begin
+						blockline <= (LOOP_LENGTH - 1);
+						if (blockval != 16) begin
+							blockval <= blockval + 1;
+						end
+					end else begin
+						blockline <= blockline - 1;
 					end
-				end else begin
-					blockline <= blockline - 1;
+					if (blockline == LOOP_LENGTH - 1) borderreg <= 0;
+					if (blockline == 1) borderreg <= 1;
+					if (blockline == 0) borderreg <= 1;
 				end
-				if (blockline == LOOP_LENGTH - 1) borderreg <= 0;
-				if (blockline == 1) borderreg <= 1;
-				if (blockline == 0) borderreg <= 1;
 			end
 		end
 	end
