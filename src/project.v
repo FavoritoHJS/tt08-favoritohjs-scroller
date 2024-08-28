@@ -127,9 +127,10 @@ module tt_um_favoritohjs_scroller (
 			count1 <= 3'd7;
 			count1b <= 3'd7;
 			lfsr2 <= 10'h10f;
-			lfsr2b <= 10'h3ff;
+			lfsr2b <= 10'h10f;
 			count2 <= 2'd3;
 			count2b <= 2'd3;
+			count2low <= 1'b1;
 			//cutoff2 <= 5'd0;
 			dither <= 1'b0;
 			rd <= 3'b000;
@@ -167,13 +168,19 @@ module tt_um_favoritohjs_scroller (
 				if (vcount == 482) begin
 					count1b <= count1b  + 1;
 					if (count1b == 0) begin
-						lfsr1b[0] <= lfsr1b[8] ^ lfsr1b[4];
-						lfsr1b[8:1] <= lfsr1b[7:0];
+						lfsr1b[0] <= lfsr1b[9] ^ lfsr1b[6];
+						lfsr1b[1] <= lfsr1b[8] ^ lfsr1b[5];
+						lfsr1b[2] <= lfsr1b[7] ^ lfsr1b[4];
+						lfsr1b[3] <= lfsr1b[6] ^ lfsr1b[3];
+						lfsr1b[9:4] <= lfsr1b[5:0];
 					end
-					{count2b, count2low}<= {count2b, count2low} + 1;
-					if (count2b == 0 & count2low == 0) begin
-						lfsr2b[0] <= lfsr2b[8] ^ lfsr2b[4];
-						lfsr2b[8:1] <= lfsr2b[7:0];
+					{count2b, count2low}<= {count2b, count2low} + 3'd1;
+					if (count2b == 0 & count2low == 1) begin
+						lfsr2b[0] <= lfsr2b[9] ^ lfsr2b[6];
+						lfsr2b[1] <= lfsr2b[8] ^ lfsr2b[5];
+						lfsr2b[2] <= lfsr2b[7] ^ lfsr2b[4];
+						lfsr2b[3] <= lfsr2b[6] ^ lfsr2b[3];
+						lfsr2b[9:4] <= lfsr2b[5:0];
 					end
 				end
 				lfsr1 <= lfsr1b;
